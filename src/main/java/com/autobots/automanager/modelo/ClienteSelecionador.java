@@ -8,7 +8,6 @@ import com.autobots.automanager.entidades.Cliente;
 public class ClienteSelecionador {
 	public Cliente seleciona(List<Cliente> clientes, Long id) {
 		Cliente selecionado = null;
-		
 		for(Cliente cliente: clientes) {
 			if(cliente.getId()== id) {
 				selecionado = cliente;
