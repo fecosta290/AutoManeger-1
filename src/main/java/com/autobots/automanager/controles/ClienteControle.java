@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.autobots.automanager.entidades.Cliente;
+import com.autobots.automanager.modelo.GeradorLinkCliente;
 import com.autobots.automanager.repositorios.ClienteRepositorio;
 
 
@@ -25,6 +26,9 @@ public class ClienteControle {
 	@Autowired
 	private ClienteRepositorio clienteRepositorio;
 	
+	@Autowired
+	private GeradorLinkCliente geradorLink;
+	
 	@PostMapping("/cadastrar")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void CadastrarCliente(@RequestBody Cliente cliente) {
@@ -32,15 +36,32 @@ public class ClienteControle {
 	}
 	
 	@GetMapping("/clientes")
-	public List<Cliente> Cliente(){
-		return clienteRepositorio.findAll();
+	public ResponseEntity<List<Cliente>> Cliente(){
+		List<Cliente> clientes = clienteRepositorio.findAll();
+		if(clientes.isEmpty()){
+			ResponseEntity<List<Cliente>> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		} else {
+			geradorLink.adicionarLink(clientes);
+			ResponseEntity<List<Cliente>> resposta = new ResponseEntity<>(clientes, HttpStatus.FOUND);
+			return resposta;
+		}
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Cliente> BuscarCliente(@PathVariable long id){
-		return clienteRepositorio.findById(id)
-				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
+		List<Cliente>clientes = clienteRepositorio.findAll();
+		Cliente cliente = clienteRepositorio.getById(id);
+		if(cliente == null){
+			ResponseEntity<Cliente> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		}
+		else{
+			geradorLink.adicionarLink(clientes);
+			geradorLink.adicionarLink(cliente);
+			ResponseEntity<Cliente> resposta = new ResponseEntity<>(cliente, HttpStatus.FOUND);
+			return resposta;
+		}
 	}
 	
 	@PutMapping("/atualizar/{id}")
