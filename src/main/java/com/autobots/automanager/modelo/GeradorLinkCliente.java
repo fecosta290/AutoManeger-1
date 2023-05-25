@@ -32,6 +32,18 @@ public class GeradorLinkCliente implements GeradorLink<Cliente> {
 						.Cliente())
 				.withRel("clientes");
 		objeto.add(linkCliente);
-		
+		Link linkClienteAtualizar = WebMvcLinkBuilder
+				.linkTo(WebMvcLinkBuilder
+						.methodOn(ClienteControle.class)
+						.Atualizar(objeto.getId(), objeto))
+				.withRel("atualizar/{id}");
+		objeto.add(linkClienteAtualizar);
+		Link linkClienteDelete = WebMvcLinkBuilder
+				.linkTo(WebMvcLinkBuilder
+						.methodOn(ClienteControle.class)
+						.Deletar(objeto.getId()))
+				.withRel("deletar/{id}");
+		objeto.add(linkClienteDelete);
 	}
+	
 }

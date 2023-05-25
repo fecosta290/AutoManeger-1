@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.autobots.automanager.entidades.Endereco;
+import com.autobots.automanager.modelo.GeradorLinkEndereco;
 import com.autobots.automanager.repositorios.EnderecoRepositorio;
 
 @RestController
@@ -22,6 +23,9 @@ public class EnderecoControle {
 		
 		@Autowired
 		private EnderecoRepositorio enderecoRepositorio;
+		
+		@Autowired
+		private GeradorLinkEndereco geradorLink;
 		
 		@PostMapping("/cadastrar")
 		@ResponseStatus(HttpStatus.CREATED)
@@ -36,9 +40,18 @@ public class EnderecoControle {
 		
 		@GetMapping("/{id}")
 		public ResponseEntity<Endereco> BuscarEndereco(@PathVariable long id){
-			return enderecoRepositorio.findById(id)
-					.map(ResponseEntity::ok)
-					.orElse(ResponseEntity.notFound().build());
+			List<Endereco>enderecos = enderecoRepositorio.findAll();
+			Endereco endereco = enderecoRepositorio.getById(id);
+			if(endereco == null){
+				ResponseEntity<Endereco> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				return resposta;
+			}
+			else{
+				geradorLink.adicionarLink(enderecos);
+				geradorLink.adicionarLink(endereco);
+				ResponseEntity<Endereco> resposta = new ResponseEntity<>(endereco, HttpStatus.FOUND);
+				return resposta;
+			}
 		}
 		
 		@PutMapping("/atualizar/{id}")

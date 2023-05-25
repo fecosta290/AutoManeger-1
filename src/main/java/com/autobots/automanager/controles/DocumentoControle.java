@@ -14,11 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.autobots.automanager.entidades.Documento;
+import com.autobots.automanager.modelo.GeradorLinkDocumento;
 import com.autobots.automanager.repositorios.DocumentoRepositorio;
 
 @RestController
 @RequestMapping("documento")
 public class DocumentoControle {
+	
+	@Autowired
+	private GeradorLinkDocumento geradorLink;
 
 	@Autowired
 	private DocumentoRepositorio documentoRepositorio;
@@ -36,9 +40,18 @@ public class DocumentoControle {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Documento> BuscarDocumento(@PathVariable long id){
-		return documentoRepositorio.findById(id)
-				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
+		List<Documento>documentos = documentoRepositorio.findAll();
+		Documento documento = documentoRepositorio.getById(id);
+		if(documento == null){
+			ResponseEntity<Documento> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		}
+		else{
+			geradorLink.adicionarLink(documentos);
+			geradorLink.adicionarLink(documento);
+			ResponseEntity<Documento> resposta = new ResponseEntity<>(documento, HttpStatus.FOUND);
+			return resposta;
+		}
 	}
 	
 	@PutMapping("/atualizar/{id}")
