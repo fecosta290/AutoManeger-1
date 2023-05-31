@@ -14,13 +14,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.autobots.automanager.entidades.Telefone;
+import com.autobots.automanager.modelo.GeradorLinkTelefone;
 import com.autobots.automanager.repositorios.TelefoneRepositorio;
 
 @RestController
 @RequestMapping("telefone")
 public class TelefoneControle {
+	
+	@Autowired
+	private GeradorLinkTelefone geradorLink;
 
 	@Autowired
 	private TelefoneRepositorio telefoneRepositorio;
@@ -32,15 +35,24 @@ public class TelefoneControle {
 	}
 	
 	@GetMapping("/telefones")
-	public List<Telefone> Endereco(){
+	public List<Telefone> Telefone(){
 		return telefoneRepositorio.findAll();
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Telefone> BuscarTelefone(@PathVariable long id){
-		return telefoneRepositorio.findById(id)
-				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
+		List<Telefone>telefones = telefoneRepositorio.findAll();
+		Telefone telefone = telefoneRepositorio.getById(id);
+		if(telefone == null){
+			ResponseEntity<Telefone> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		}
+		else{
+			geradorLink.adicionarLink(telefones);
+			geradorLink.adicionarLink(telefone);
+			ResponseEntity<Telefone> resposta = new ResponseEntity<>(telefone, HttpStatus.FOUND);
+			return resposta;
+		}
 	}
 	
 	@PutMapping("/atualizar/{id}")
